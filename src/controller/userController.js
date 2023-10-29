@@ -1,9 +1,8 @@
 const userModel = require('../model/userModel')
 const nodemailer=require('nodemailer');
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-
-
+const jwt = require('jsonwebtoken');
+const otpGenerator = require('otp-generator')
 //=======================[User Register API]=======================
 
 
@@ -80,6 +79,26 @@ const userLogin = async function (req, res) {
 };
 
 
+const userget = async function (req, res) {
+    try {
+        const { userId } = req.body;
+
+       
+    } catch (err) {
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+
+const useredit = async function (req, res) {
+    try {
+        const { userId } = req.body;
+
+       
+    } catch (err) {
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+
 
 //configure nodemailer
 const transporter = nodemailer.createTransport({
@@ -97,56 +116,65 @@ const sendotp = async (req, res) => {
     if (!email) {
         return res.status(400).json({ message: 'Email is required' })
     }
-    const otp = otpGenerator.generate(6, { digits: true, uppercase: false, specialChars: false });
-    // Save the OTP to the database
-    await Jobseeker.updateOne({ email: req.body.email }, { otp });
-    const mailOptions = {
-        from: "kimmikumarisinha@gmail.com",
-        to: req.body.email,
-        subject: "Email Verification for Nuakri App",
-        html: `
-        <html>
-        <head>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f4f4f4;
-                }
-                .container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    background-color: #fff;
-                    border-radius: 5px;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                }
-                h2 {
-                    color: #333;
-                }
-                p {
-                    font-size: 16px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h2>Email Verification for Nuakri App</h2>
-                <p>Hello,</p>
-                <p>Your OTP for email verification is: <strong>${otp}</strong></p>
-                <p>Please use this OTP to complete your to reset password. Do not share this OTP with anyone.</p>
-            </div>
-        </body>
-        </html>
-    `
-    };
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log(error);
-            return res.status(500).json({ message: 'failed to send otp' })
-        }
-        console.log('email sent:' + info.response);
-        return res.status(200).json({ message: 'OTP sent sucessfully' })
-    })
+    let emailfind=await userModel.findOne({email:email})
+    console.log(emailfind)
+    if(emailfind){
+        const otp = otpGenerator.generate(6, { digits: true, uppercase: false, specialChars: false });
+        // Save the OTP to the database
+        await userModel.updateOne({ email: req.body.email }, { otp });
+        const mailOptions = {
+            from: "kimmikumarisinha@gmail.com",
+            to: req.body.email,
+            subject: "Email Verification for Nuakri App",
+            html: `
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f4;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background-color: #fff;
+                        border-radius: 5px;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    }
+                    h2 {
+                        color: #333;
+                    }
+                    p {
+                        font-size: 16px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2>Email Verification for Nuakri App</h2>
+                    <p>Hello,</p>
+                    <p>Your OTP for email verification is: <strong>${otp}</strong></p>
+                    <p>Please use this OTP to complete your to reset password. Do not share this OTP with anyone.</p>
+                </div>
+            </body>
+            </html>
+        `
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                return res.status(500).json({ message: 'failed to send otp' })
+            }
+            console.log('email sent:' + info.response);
+            return res.status(200).json({ message: 'OTP sent sucessfully' })
+        })
+
+    }
+   
+    else{
+        return res.status(400).json({ message: 'This email is not found in database' })
+    }
 }
 
 
@@ -228,4 +256,4 @@ const editUserProfile = async function (req, res) {
     }
 };
 
-module.exports = { userRegister, userLogin,sendotp ,verifyotp,updatepassword,editUserProfile}
+module.exports = { userRegister, userLogin,sendotp ,verifyotp,updatepassword,editUserProfile,userget,useredit}

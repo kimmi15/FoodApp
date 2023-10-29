@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controller/userController");
+const vendorController=require('../controller/vendorController');
 
-const vendorController=require('../controller/vendorController')
+// userget,useredit
 
 //----------------------------------------------------------------------------------------------------------------------//
 
@@ -18,6 +19,11 @@ router.post('/verifyotp',userController.verifyotp);
 router.post('/updatepassword',userController.updatepassword)
 
 router.get('/editUserProfile',userController.editUserProfile)
+
+
+router.get('/usergetProfile',userController.userget);
+
+router.put('/useredit',userController.useredit)
 
 //vendor
 
